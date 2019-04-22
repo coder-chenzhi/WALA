@@ -29,6 +29,6 @@ dependencies {
 		)
 }
 
-test {
+tasks.named('test') {
 	maxHeapSize = '800M'
 }

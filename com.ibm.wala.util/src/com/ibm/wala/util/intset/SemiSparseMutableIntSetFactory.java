@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,19 +7,16 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.util.intset;
 
 import java.util.TreeSet;
 
-/**
- */
-public class SemiSparseMutableIntSetFactory implements MutableIntSetFactory<SemiSparseMutableIntSet> {
+/** */
+public class SemiSparseMutableIntSetFactory
+    implements MutableIntSetFactory<SemiSparseMutableIntSet> {
 
-  /**
-   * @param set
-   * @throws IllegalArgumentException  if set is null
-   */
+  /** @throws IllegalArgumentException if set is null */
   @Override
   public SemiSparseMutableIntSet make(int[] set) {
     if (set == null) {
@@ -41,15 +38,11 @@ public class SemiSparseMutableIntSetFactory implements MutableIntSetFactory<Semi
     }
   }
 
-  /**
-   * @param string
-   */
   @Override
   public SemiSparseMutableIntSet parse(String string) throws NumberFormatException {
     int[] data = SparseIntSet.parseIntArray(string);
     SemiSparseMutableIntSet result = new SemiSparseMutableIntSet();
-    for (int element : data)
-      result.add(element);
+    for (int element : data) result.add(element);
     return result;
   }
 
@@ -70,5 +63,4 @@ public class SemiSparseMutableIntSetFactory implements MutableIntSetFactory<Semi
   public SemiSparseMutableIntSet make() {
     return new SemiSparseMutableIntSet();
   }
-
 }

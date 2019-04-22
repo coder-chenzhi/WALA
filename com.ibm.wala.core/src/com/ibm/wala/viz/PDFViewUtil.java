@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,10 +7,9 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.viz;
 
-import java.util.HashMap;
 import com.ibm.wala.cfg.CFGSanitizer;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.IR;
@@ -27,30 +26,37 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Iterator2Iterable;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.strings.StringStuff;
+import java.util.HashMap;
 
-/**
- * utilities for integrating with ghostview (or another PS/PDF viewer)
- */
+/** utilities for integrating with ghostview (or another PS/PDF viewer) */
 public class PDFViewUtil {
 
   /**
    * spawn a process to view a WALA IR
-   * 
+   *
    * @return a handle to the ghostview process
    */
-  public static Process ghostviewIR(IClassHierarchy cha, IR ir, String pdfFile, String dotFile, String dotExe, String pdfViewExe)
+  public static Process ghostviewIR(
+      IClassHierarchy cha, IR ir, String pdfFile, String dotFile, String dotExe, String pdfViewExe)
       throws WalaException {
     return ghostviewIR(cha, ir, pdfFile, dotFile, dotExe, pdfViewExe, null);
   }
 
   /**
    * spawn a process to view a WALA IR
-   * 
+   *
    * @return a handle to the pdf viewer process
    * @throws IllegalArgumentException if ir is null
    */
-  public static Process ghostviewIR(IClassHierarchy cha, IR ir, String pdfFile, String dotFile, String dotExe, String pdfViewExe,
-      NodeDecorator<ISSABasicBlock> annotations) throws WalaException {
+  public static Process ghostviewIR(
+      IClassHierarchy cha,
+      IR ir,
+      String pdfFile,
+      String dotFile,
+      String dotExe,
+      String pdfViewExe,
+      NodeDecorator<ISSABasicBlock> annotations)
+      throws WalaException {
 
     if (ir == null) {
       throw new IllegalArgumentException("ir is null");
@@ -64,7 +70,7 @@ public class PDFViewUtil {
 
     g = CFGSanitizer.sanitize(ir, cha);
 
-    DotUtil.<ISSABasicBlock>dotify(g,labels,dotFile,pdfFile,dotExe);
+    DotUtil.<ISSABasicBlock>dotify(g, labels, dotFile, pdfFile, dotExe);
 
     return launchPDFView(pdfFile, pdfViewExe);
   }
@@ -73,7 +79,7 @@ public class PDFViewUtil {
     if (ir == null) {
       throw new IllegalArgumentException("ir is null");
     }
-    final HashMap<ISSABasicBlock,String> labelMap = HashMapFactory.make();
+    final HashMap<ISSABasicBlock, String> labelMap = HashMapFactory.make();
     for (ISSABasicBlock issaBasicBlock : ir.getControlFlowGraph()) {
       SSACFG.BasicBlock bb = (SSACFG.BasicBlock) issaBasicBlock;
       labelMap.put(bb, getNodeLabel(ir, bb));
@@ -84,9 +90,10 @@ public class PDFViewUtil {
 
   /**
    * A node decorator which concatenates the labels from two other node decorators
+   *
    * @param <T> the type of the node
    */
-  private final static class ConcatenatingNodeDecorator<T> implements NodeDecorator<T> {
+  private static final class ConcatenatingNodeDecorator<T> implements NodeDecorator<T> {
 
     private final NodeDecorator<T> A;
 
@@ -101,11 +108,10 @@ public class PDFViewUtil {
     public String getLabel(T n) throws WalaException {
       return A.getLabel(n) + B.getLabel(n);
     }
-
   }
 
   private static String getNodeLabel(IR ir, BasicBlock bb) {
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
 
     int start = bb.getFirstInstructionIndex();
     int end = bb.getLastInstructionIndex();
@@ -121,14 +127,14 @@ public class PDFViewUtil {
     result.append("\\n");
     for (SSAPhiInstruction phi : Iterator2Iterable.make(bb.iteratePhis())) {
       if (phi != null) {
-        result.append("           " + phi.toString(ir.getSymbolTable())).append("\\l");
+        result.append("           ").append(phi.toString(ir.getSymbolTable())).append("\\l");
       }
     }
     if (bb instanceof ExceptionHandlerBasicBlock) {
       ExceptionHandlerBasicBlock ebb = (ExceptionHandlerBasicBlock) bb;
       SSAGetCaughtExceptionInstruction s = ebb.getCatchInstruction();
       if (s != null) {
-        result.append("           " + s.toString(ir.getSymbolTable())).append("\\l");
+        result.append("           ").append(s.toString(ir.getSymbolTable())).append("\\l");
       } else {
         result.append("           " + " No catch instruction. Unreachable?\\l");
       }
@@ -136,7 +142,8 @@ public class PDFViewUtil {
     SSAInstruction[] instructions = ir.getInstructions();
     for (int j = start; j <= end; j++) {
       if (instructions[j] != null) {
-        StringBuffer x = new StringBuffer(j + "   " + instructions[j].toString(ir.getSymbolTable()));
+        StringBuilder x =
+            new StringBuilder(j + "   " + instructions[j].toString(ir.getSymbolTable()));
         StringStuff.padWithSpaces(x, 35);
         result.append(x);
         result.append("\\l");
@@ -144,15 +151,13 @@ public class PDFViewUtil {
     }
     for (SSAPiInstruction pi : Iterator2Iterable.make(bb.iteratePis())) {
       if (pi != null) {
-        result.append("           " + pi.toString(ir.getSymbolTable())).append("\\l");
+        result.append("           ").append(pi.toString(ir.getSymbolTable())).append("\\l");
       }
     }
     return result.toString();
   }
 
-  /**
-   * Launch a process to view a PDF file
-   */
+  /** Launch a process to view a PDF file */
   public static Process launchPDFView(String pdfFile, String gvExe) throws WalaException {
     // set up a viewer for the ps file.
     if (gvExe == null) {
@@ -170,5 +175,4 @@ public class PDFViewUtil {
     }
     return gv.getProcess();
   }
-
 }

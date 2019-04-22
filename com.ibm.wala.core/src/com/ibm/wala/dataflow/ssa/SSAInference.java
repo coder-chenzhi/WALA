@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 
 package com.ibm.wala.dataflow.ssa;
 
@@ -20,57 +20,52 @@ import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.util.collections.Iterator2Iterable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class performs intra-procedural propagation over an SSA form.
- * 
- * A client will subclass an {@link SSAInference} by providing factories that generate {@link IVariable}s corresponding to SSA value
- * numbers, and {@link AbstractOperator}s corresponding to SSA instructions. This class will set up a dataflow system induced by the
- * SSA def-use graph, and solve the system by iterating to a fixed point.
- * 
+ *
+ * <p>A client will subclass an {@link SSAInference} by providing factories that generate {@link
+ * IVariable}s corresponding to SSA value numbers, and {@link AbstractOperator}s corresponding to
+ * SSA instructions. This class will set up a dataflow system induced by the SSA def-use graph, and
+ * solve the system by iterating to a fixed point.
+ *
  * @see TypeInference for the canonical client of this machinery.
  */
 public abstract class SSAInference<T extends IVariable<T>> extends DefaultFixedPointSolver<T> {
   static final boolean DEBUG = false;
 
-  /**
-   * The governing SSA form
-   */
+  /** The governing SSA form */
   private IR ir;
 
-  /**
-   * The governing symbol table
-   */
+  /** The governing symbol table */
   private SymbolTable symbolTable;
 
-  /**
-   * Dataflow variables, one for each value in the symbol table.
-   */
-  private IVariable[] vars;
+  /** Dataflow variables, one for each value in the symbol table. */
+  private List<IVariable<T>> vars;
 
   public interface OperatorFactory<T extends IVariable<T>> {
     /**
      * Get the dataflow operator induced by an instruction in SSA form.
-     * 
-     * @param instruction
-     * @return dataflow operator for the instruction, or null if the instruction is not applicable to the dataflow system.
+     *
+     * @return dataflow operator for the instruction, or null if the instruction is not applicable
+     *     to the dataflow system.
      */
     AbstractOperator<T> get(SSAInstruction instruction);
   }
 
-  public interface VariableFactory {
+  public interface VariableFactory<T extends IVariable<T>> {
     /**
      * Make the variable for a given value number.
-     * 
+     *
      * @return a newly created dataflow variable, or null if not applicable.
      */
-    public IVariable makeVariable(int valueNumber);
+    IVariable<T> makeVariable(int valueNumber);
   }
 
-  /**
-   * initializer for SSA Inference equations.
-   */
-  protected void init(IR ir, VariableFactory varFactory, OperatorFactory<T> opFactory) {
+  /** initializer for SSA Inference equations. */
+  protected void init(IR ir, VariableFactory<T> varFactory, OperatorFactory<T> opFactory) {
 
     this.ir = ir;
     this.symbolTable = ir.getSymbolTable();
@@ -95,9 +90,7 @@ public abstract class SSAInference<T extends IVariable<T>> extends DefaultFixedP
     }
   }
 
-  /**
-   * Create a dataflow equation induced by a given instruction
-   */
+  /** Create a dataflow equation induced by a given instruction */
   private void makeEquationForInstruction(OperatorFactory<T> opFactory, SSAInstruction s) {
     if (s != null && s.hasDef()) {
       AbstractOperator<T> op = opFactory.get(s);
@@ -120,42 +113,40 @@ public abstract class SSAInference<T extends IVariable<T>> extends DefaultFixedP
     }
   }
 
-  /**
-   * Create a dataflow variable for each value number
-   */
-  private void createVariables(VariableFactory factory) {
-    vars = new IVariable[symbolTable.getMaxValueNumber() + 1];
-    for (int i = 1; i < vars.length; i++) {
-      vars[i] = factory.makeVariable(i);
+  /** Create a dataflow variable for each value number */
+  private void createVariables(VariableFactory<T> factory) {
+    //noinspection unchecked
+    final int varsCount = symbolTable.getMaxValueNumber() + 1;
+    vars = new ArrayList<>(varsCount);
+    vars.add(null);
+    for (int i = 1; i < varsCount; i++) {
+      vars.add(factory.makeVariable(i));
     }
-
   }
 
-  /**
-   * @return the dataflow variable representing the value number, or null if none found.
-   */
+  /** @return the dataflow variable representing the value number, or null if none found. */
   @SuppressWarnings("unchecked")
   protected T getVariable(int valueNumber) {
     if (valueNumber < 0) {
       throw new IllegalArgumentException("Illegal valueNumber " + valueNumber);
     }
     if (DEBUG) {
-      System.err.println(("getVariable for " + valueNumber + " returns " + vars[valueNumber]));
+      System.err.println("getVariable for " + valueNumber + " returns " + vars.get(valueNumber));
     }
     assert vars != null : "null vars array";
-    return (T) vars[valueNumber];
+    return (T) vars.get(valueNumber);
   }
 
   /**
    * Return a string representation of the system
-   * 
+   *
    * @return a string representation of the system
    */
   @Override
   public String toString() {
-    StringBuffer result = new StringBuffer("Type inference : \n");
-    for (int i = 0; i < vars.length; i++) {
-      result.append("v").append(i).append("  ").append(vars[i]).append("\n");
+    StringBuilder result = new StringBuilder("Type inference : \n");
+    for (int i = 0; i < vars.size(); i++) {
+      result.append('v').append(i).append("  ").append(vars.get(i)).append('\n');
     }
     return result.toString();
   }

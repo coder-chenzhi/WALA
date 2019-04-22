@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002,2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,12 +7,12 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.shrikeBT;
 
 /**
- * ShiftInstructions are distinguished from BinaryOpInstructions because most binary operations in the JVM require both parameters
- * to be the same type, but shifts always take one int parameter.
+ * ShiftInstructions are distinguished from BinaryOpInstructions because most binary operations in
+ * the JVM require both parameters to be the same type, but shifts always take one int parameter.
  */
 public final class ShiftInstruction extends Instruction implements IShiftInstruction {
   protected ShiftInstruction(short opcode) {
@@ -29,7 +29,8 @@ public final class ShiftInstruction extends Instruction implements IShiftInstruc
     return r;
   }
 
-  public static ShiftInstruction make(String type, Operator operator) throws IllegalArgumentException {
+  public static ShiftInstruction make(String type, Operator operator)
+      throws IllegalArgumentException {
     if (operator == null) {
       throw new IllegalArgumentException("operator is null");
     }
@@ -88,7 +89,7 @@ public final class ShiftInstruction extends Instruction implements IShiftInstruc
 
   @Override
   public String toString() {
-    return "Shift(" + getType() + "," + getOperator() + ")";
+    return "Shift(" + getType() + ',' + getOperator() + ')';
   }
 
   @Override

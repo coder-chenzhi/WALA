@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,13 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.types.generics;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
@@ -21,17 +16,21 @@ import com.ibm.wala.classLoader.ShrikeCTMethod;
 import com.ibm.wala.classLoader.ShrikeClass;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeReference;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Under construction.
- * 
- * FormalTypeParameter: Identifier ClassBound InterfaceBound*
- * 
- * ClassBound: : FieldTypeSignature?
- * 
- * InterfaceBound : FieldTypeSignature
- * 
- * FieldTypeSignature: ClassTypeSignature ArrayTypeSignature TypeVariableSignature
+ *
+ * <p>FormalTypeParameter: Identifier ClassBound InterfaceBound*
+ *
+ * <p>ClassBound: : FieldTypeSignature?
+ *
+ * <p>InterfaceBound : FieldTypeSignature
+ *
+ * <p>FieldTypeSignature: ClassTypeSignature ArrayTypeSignature TypeVariableSignature
  */
 public class FormalTypeParameter extends Signature {
 
@@ -119,24 +118,25 @@ public class FormalTypeParameter extends Signature {
     do {
       assert (s.charAt(result) == ':');
       switch (s.charAt(++result)) {
-      case TypeReference.ClassTypeCode: {
-        int depth = 0;
-        while (s.charAt(result) != ';' || depth > 0) {
-          if (s.charAt(result) == '<') {
-            depth++;
+        case TypeReference.ClassTypeCode:
+          {
+            int depth = 0;
+            while (s.charAt(result) != ';' || depth > 0) {
+              if (s.charAt(result) == '<') {
+                depth++;
+              }
+              if (s.charAt(result) == '>') {
+                depth--;
+              }
+              result++;
+            }
+            result++;
+            break;
           }
-          if (s.charAt(result) == '>') {
-            depth--;
-          }
-          result++;
-        }
-        result++;
-        break;
-      }
-      case ':':
-        break;
-      default:
-        assert false : "bad type signature list " + s + " " + (result - 1);
+        case ':':
+          break;
+        default:
+          assert false : "bad type signature list " + s + ' ' + (result - 1);
       }
     } while (s.charAt(result) == ':');
     return result;
@@ -163,12 +163,9 @@ public class FormalTypeParameter extends Signature {
     return interfaceBounds;
   }
 
-  /**
-   * @param klass
-   * @return the formal type parameters, or null if none
-   * @throws InvalidClassFileException
-   */
-  public static FormalTypeParameter[] getTypeParameters(IClass klass) throws InvalidClassFileException {
+  /** @return the formal type parameters, or null if none */
+  public static FormalTypeParameter[] getTypeParameters(IClass klass)
+      throws InvalidClassFileException {
     if (klass instanceof ShrikeClass) {
       ShrikeClass sc = (ShrikeClass) klass;
       if (sc.getClassSignature() == null) {
@@ -181,7 +178,8 @@ public class FormalTypeParameter extends Signature {
     }
   }
 
-  public static FormalTypeParameter[] getTypeParameters(IMethod method) throws InvalidClassFileException {
+  public static FormalTypeParameter[] getTypeParameters(IMethod method)
+      throws InvalidClassFileException {
     if (method instanceof ShrikeCTMethod) {
       ShrikeCTMethod sm = (ShrikeCTMethod) method;
       if (sm.getMethodTypeSignature() == null) {

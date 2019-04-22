@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002,2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,14 +7,12 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.shrikeCT;
 
-/**
- * This class helps emit LineNumberTable attributes.
- */
+/** This class helps emit LineNumberTable attributes. */
 public final class LineNumberTableWriter extends ClassWriter.Element {
-  final private int attrID;
+  private final int attrID;
 
   private int[] rawTable = emptyTable;
 
@@ -22,7 +20,7 @@ public final class LineNumberTableWriter extends ClassWriter.Element {
 
   /**
    * Build an empty LineNumberTable.
-   * 
+   *
    * @throws IllegalArgumentException if w is null
    */
   public LineNumberTableWriter(ClassWriter w) {
@@ -33,8 +31,9 @@ public final class LineNumberTableWriter extends ClassWriter.Element {
   }
 
   /**
-   * Set the raw table entries. Consider calling LineNumberTableWriter.makeRawTable to build the raw entries.
-   * 
+   * Set the raw table entries. Consider calling LineNumberTableWriter.makeRawTable to build the raw
+   * entries.
+   *
    * @param table a flattened sequence of (startPC, lineNumber) pairs
    */
   public void setRawTable(int[] table) {
@@ -78,8 +77,8 @@ public final class LineNumberTableWriter extends ClassWriter.Element {
   }
 
   /**
-   * @param newLineMap an array indexed by bytecode offset, mapping each bytecode offset to its line number (or 0 if there is no
-   *          line or it's not known)
+   * @param newLineMap an array indexed by bytecode offset, mapping each bytecode offset to its line
+   *     number (or 0 if there is no line or it's not known)
    * @return the line numbers in "raw" format, a flattened sequence of (startPC, lineNumber) pairs
    * @throws IllegalArgumentException if newLineMap == null
    */

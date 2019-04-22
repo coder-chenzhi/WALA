@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,11 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.cfg;
-
-import java.util.Collection;
-import java.util.Iterator;
 
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.Language;
@@ -31,16 +28,18 @@ import com.ibm.wala.util.collections.Iterator2Iterable;
 import com.ibm.wala.util.debug.Assertions;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
+import java.util.Collection;
+import java.util.Iterator;
 
-/**
- * Utility class to remove exceptional edges to exit() from a CFG
- */
+/** Utility class to remove exceptional edges to exit() from a CFG */
 public class CFGSanitizer {
 
   /**
-   * Return a view of the {@link ControlFlowGraph} for an {@link IR}, which elides all exceptional exits from PEIs in the IR.
+   * Return a view of the {@link ControlFlowGraph} for an {@link IR}, which elides all exceptional
+   * exits from PEIs in the IR.
    */
-  public static Graph<ISSABasicBlock> sanitize(IR ir, IClassHierarchy cha) throws IllegalArgumentException, WalaException {
+  public static Graph<ISSABasicBlock> sanitize(IR ir, IClassHierarchy cha)
+      throws IllegalArgumentException, WalaException {
 
     if (ir == null) {
       throw new IllegalArgumentException("ir cannot be null");
@@ -73,8 +72,11 @@ public class CFGSanitizer {
         // TODO: this shouldn't happen?
         continue;
       }
-      if (s instanceof SSAReturnInstruction || s instanceof SSAThrowInstruction || cfg.getSuccNodeCount(b) == 1) {
-        // return or athrow, or some statement which is not an athrow or return whose only successor is the exit node (can only
+      if (s instanceof SSAReturnInstruction
+          || s instanceof SSAThrowInstruction
+          || cfg.getSuccNodeCount(b) == 1) {
+        // return or athrow, or some statement which is not an athrow or return whose only successor
+        // is the exit node (can only
         // occur in synthetic methods without a return statement? --MS); add edge to exit
         g.addEdge(b, exit);
       } else {
@@ -149,10 +151,9 @@ public class CFGSanitizer {
     return g;
   }
 
-  /**
-   * What are the exception types which s may throw?
-   */
-  private static TypeReference[] computeExceptions(IClassHierarchy cha, IR ir, SSAInstruction s) throws InvalidClassFileException {
+  /** What are the exception types which s may throw? */
+  private static TypeReference[] computeExceptions(IClassHierarchy cha, IR ir, SSAInstruction s)
+      throws InvalidClassFileException {
     Collection<TypeReference> c = null;
     Language l = ir.getMethod().getDeclaringClass().getClassLoader().getLanguage();
     if (s instanceof SSAInvokeInstruction) {
@@ -172,5 +173,4 @@ public class CFGSanitizer {
       return exceptions;
     }
   }
-
 }

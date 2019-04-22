@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,20 +7,17 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.util.graph;
 
-import java.util.Collection;
-import java.util.HashSet;
-
 import com.ibm.wala.util.collections.HashSetFactory;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- *  TODO: Move this somewhere.
- */
+/** TODO: Move this somewhere. */
 public class InferGraphRoots {
 
-  public static <T> Collection<T> inferRoots(Graph<T> g){
+  public static <T> Set<T> inferRoots(Graph<T> g) {
     if (g == null) {
       throw new IllegalArgumentException("g is null");
     }

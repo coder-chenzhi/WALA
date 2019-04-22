@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,11 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.ipa.callgraph.propagation;
-
-import java.util.Collection;
-import java.util.Iterator;
 
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.NewSiteReference;
@@ -25,10 +22,10 @@ import com.ibm.wala.util.collections.FilterIterator;
 import com.ibm.wala.util.collections.MapIterator;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.debug.Assertions;
+import java.util.Collection;
+import java.util.Iterator;
 
-/**
- * An instance key which represents a unique set for each concrete type.
- */
+/** An instance key which represents a unique set for each concrete type. */
 public final class ConcreteTypeKey implements InstanceKey {
   private final IClass type;
 
@@ -59,7 +56,7 @@ public final class ConcreteTypeKey implements InstanceKey {
 
   @Override
   public String toString() {
-    return "[" + type + "]";
+    return "[" + type + ']';
   }
 
   public IClass getType() {
@@ -106,9 +103,7 @@ public final class ConcreteTypeKey implements InstanceKey {
       public Iterator<? extends Pair<CGNode, NewSiteReference>> makeInner(final CGNode outer) {
         return new MapIterator<>(
             new FilterIterator<>(
-                outer.iterateNewSites(),
-                o -> o.getDeclaredType().equals(type.getReference())
-            ),
+                outer.iterateNewSites(), o -> o.getDeclaredType().equals(type.getReference())),
             object -> Pair.make(outer, object));
       }
     };

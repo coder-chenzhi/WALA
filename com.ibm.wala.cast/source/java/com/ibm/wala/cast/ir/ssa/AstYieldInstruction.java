@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2013 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.cast.ir.ssa;
 
 import com.ibm.wala.ssa.SSAInstruction;
@@ -15,22 +15,21 @@ import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SymbolTable;
 
 public class AstYieldInstruction extends AstConsumeInstruction {
-  
+
   public AstYieldInstruction(int iindex, int[] rvals) {
     super(iindex, rvals);
   }
 
   @Override
   public SSAInstruction copyForSSA(SSAInstructionFactory insts, int[] defs, int[] uses) {
-    return ((AstInstructionFactory)insts).EchoInstruction(iindex, uses==null? rvals: uses);
+    return ((AstInstructionFactory) insts).EchoInstruction(iindex, uses == null ? rvals : uses);
   }
-
 
   @Override
   public String toString(SymbolTable symbolTable) {
-    StringBuffer result = new StringBuffer("echo/print ");
+    StringBuilder result = new StringBuilder("echo/print ");
     for (int rval : rvals) {
-      result.append(getValueString(symbolTable, rval)).append(" ");
+      result.append(getValueString(symbolTable, rval)).append(' ');
     }
 
     return result.toString();
@@ -38,7 +37,6 @@ public class AstYieldInstruction extends AstConsumeInstruction {
 
   @Override
   public void visit(IVisitor v) {
-    ((AstInstructionVisitor)v).visitYield(this);
+    ((AstInstructionVisitor) v).visitYield(this);
   }
-
 }

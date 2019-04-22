@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,12 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.ssa.analysis;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import com.ibm.wala.cfg.ControlFlowGraph;
 import com.ibm.wala.fixedpoint.impl.DefaultFixedPointSolver;
@@ -25,17 +21,19 @@ import com.ibm.wala.util.CancelRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Iterator2Iterable;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 
-/**
- * Eliminate dead assignments (phis) from an SSA IR.
- */
+/** Eliminate dead assignments (phis) from an SSA IR. */
 public class DeadAssignmentElimination {
 
   private static final boolean DEBUG = false;
 
   /**
    * eliminate dead phis from an ir
-   * @throws IllegalArgumentException  if ir is null
+   *
+   * @throws IllegalArgumentException if ir is null
    */
   public static void perform(IR ir) {
     if (ir == null) {
@@ -48,11 +46,12 @@ public class DeadAssignmentElimination {
     } catch (CancelException e) {
       throw new CancelRuntimeException(e);
     }
-    doTransformation(ir,system);
+    doTransformation(ir, system);
   }
 
   /**
    * Perform the transformation
+   *
    * @param ir IR to transform
    * @param solution dataflow solution for dead assignment elimination
    */
@@ -81,20 +80,14 @@ public class DeadAssignmentElimination {
     }
   }
 
-  /**
-   * A dataflow system which computes whether or not a value is dead
-   */
+  /** A dataflow system which computes whether or not a value is dead */
   private static class DeadValueSystem extends DefaultFixedPointSolver<BooleanVariable> {
 
-    /**
-     * Map: value number -&gt; BooleanVariable isLive
-     */
-    final private Map<Integer, BooleanVariable> vars = HashMapFactory.make();
+    /** Map: value number -&gt; BooleanVariable isLive */
+    private final Map<Integer, BooleanVariable> vars = HashMapFactory.make();
 
-    /**
-     * set of value numbers that are trivially dead
-     */
-    final private HashSet<Integer> trivialDead = HashSetFactory.make();
+    /** set of value numbers that are trivially dead */
+    private final HashSet<Integer> trivialDead = HashSetFactory.make();
 
     /**
      * @param ir the IR to analyze
@@ -108,7 +101,7 @@ public class DeadAssignmentElimination {
           continue;
         }
         int def = phi.getDef();
-        if (DU.getNumberOfUses(def) == 0) {
+        if (DU.isUnused(def)) {
           // the phi is certainly dead ... record this with a dataflow fact.
           trivialDead.add(Integer.valueOf(def));
         } else {
@@ -155,7 +148,7 @@ public class DeadAssignmentElimination {
 
     @Override
     protected void initializeVariables() {
-      //do nothing: all variables are initialized to false (TOP), meaning "not live"
+      // do nothing: all variables are initialized to false (TOP), meaning "not live"
     }
 
     @Override
@@ -163,10 +156,7 @@ public class DeadAssignmentElimination {
       addAllStatementsToWorkList();
     }
 
-    /**
-     * @param value
-     * @return true iff there are no uses of the given value number
-     */
+    /** @return true iff there are no uses of the given value number */
     private boolean isDead(int value) {
       Integer V = Integer.valueOf(value);
       if (trivialDead.contains(V)) {
@@ -185,6 +175,5 @@ public class DeadAssignmentElimination {
     protected BooleanVariable[] makeStmtRHS(int size) {
       return new BooleanVariable[size];
     }
-
   }
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2007 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,10 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.ipa.summaries;
-
-import java.util.WeakHashMap;
 
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
@@ -24,62 +22,104 @@ import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SSAInvokeDynamicInstruction;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.strings.Atom;
+import java.util.Map;
 
 public class LambdaMethodTargetSelector implements MethodTargetSelector {
 
-  private final WeakHashMap<BootstrapMethod, SummarizedMethod> summaries = new WeakHashMap<>();
+  private final Map<BootstrapMethod, SummarizedMethod> methodSummaries = HashMapFactory.make();
+
+  private final Map<BootstrapMethod, LambdaSummaryClass> classSummaries = HashMapFactory.make();
 
   private final MethodTargetSelector base;
-  
+
   public LambdaMethodTargetSelector(MethodTargetSelector base) {
     this.base = base;
   }
 
   @Override
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
-    if (! site.getDeclaredTarget().getName().equals(MethodReference.clinitName) && 
-        caller.getClassHierarchy().lookupClass(TypeReference.LambdaMetaFactory) != null &&
-        caller.getClassHierarchy().lookupClass(TypeReference.LambdaMetaFactory).equals(
-            caller.getClassHierarchy().lookupClass(site.getDeclaredTarget().getDeclaringClass()))) 
-    {
-      SSAInvokeDynamicInstruction invoke = (SSAInvokeDynamicInstruction)caller.getIR().getCalls(site)[0];
-      
-      if (!summaries.containsKey(invoke.getBootstrap())) {
-        String cls = caller.getMethod().getDeclaringClass().getName().toString().replace("/", "$").substring(1);
+    if (!site.getDeclaredTarget().getName().equals(MethodReference.clinitName)
+        && caller.getClassHierarchy().lookupClass(TypeReference.LambdaMetaFactory) != null
+        && caller
+            .getClassHierarchy()
+            .lookupClass(TypeReference.LambdaMetaFactory)
+            .equals(
+                caller
+                    .getClassHierarchy()
+                    .lookupClass(site.getDeclaredTarget().getDeclaringClass()))) {
+      SSAInvokeDynamicInstruction invoke =
+          (SSAInvokeDynamicInstruction) caller.getIR().getCalls(site)[0];
+
+      if (!methodSummaries.containsKey(invoke.getBootstrap())) {
+        String cls =
+            caller
+                .getMethod()
+                .getDeclaringClass()
+                .getName()
+                .toString()
+                .replace("/", "$")
+                .substring(1);
         int bootstrapIndex = invoke.getBootstrap().getIndexInClassFile();
-        MethodReference ref = 
+        MethodReference ref =
             MethodReference.findOrCreate(
-                site.getDeclaredTarget().getDeclaringClass(), 
-                Atom.findOrCreateUnicodeAtom(site.getDeclaredTarget().getName().toString() +"$" + cls + "$" + bootstrapIndex),
+                site.getDeclaredTarget().getDeclaringClass(),
+                Atom.findOrCreateUnicodeAtom(
+                    site.getDeclaredTarget().getName().toString()
+                        + '$'
+                        + cls
+                        + '$'
+                        + bootstrapIndex),
                 site.getDeclaredTarget().getDescriptor());
-        
+
         MethodSummary summary = new MethodSummary(ref);
-        
+
         if (site.isStatic()) {
           summary.setStatic(true);
         }
-        
+
         int index = 0;
         int v = site.getDeclaredTarget().getNumberOfParameters() + 2;
-        IClass lambda = LambdaSummaryClass.findOrCreate(caller, invoke);
+        IClass lambda = getLambdaSummaryClass(caller, invoke);
         SSAInstructionFactory insts = Language.JAVA.instructionFactory();
-        summary.addStatement(insts.NewInstruction(index, v, NewSiteReference.make(index, lambda.getReference())));
+        summary.addStatement(
+            insts.NewInstruction(index, v, NewSiteReference.make(index, lambda.getReference())));
         index++;
-        for(int i = 0; i < site.getDeclaredTarget().getNumberOfParameters(); i++) {
+        for (int i = 0; i < site.getDeclaredTarget().getNumberOfParameters(); i++) {
           summary.addStatement(
-              insts.PutInstruction(index++, v, i+1, lambda.getField(Atom.findOrCreateUnicodeAtom("c" + i)).getReference()));
+              insts.PutInstruction(
+                  index++,
+                  v,
+                  i + 1,
+                  lambda.getField(Atom.findOrCreateUnicodeAtom("c" + i)).getReference()));
         }
         summary.addStatement(insts.ReturnInstruction(index++, v, false));
-        
-        summaries.put(invoke.getBootstrap(), new SummarizedMethod(ref, summary, caller.getClassHierarchy().lookupClass(site.getDeclaredTarget().getDeclaringClass())));
+
+        methodSummaries.put(
+            invoke.getBootstrap(),
+            new SummarizedMethod(
+                ref,
+                summary,
+                caller
+                    .getClassHierarchy()
+                    .lookupClass(site.getDeclaredTarget().getDeclaringClass())));
       }
-      
-      return summaries.get(invoke.getBootstrap());
-      
+      return methodSummaries.get(invoke.getBootstrap());
+
     } else {
       return base.getCalleeTarget(caller, site, receiver);
     }
   }
 
+  private LambdaSummaryClass getLambdaSummaryClass(
+      CGNode caller, SSAInvokeDynamicInstruction invoke) {
+    BootstrapMethod bootstrap = invoke.getBootstrap();
+    LambdaSummaryClass result = classSummaries.get(bootstrap);
+    if (result == null) {
+      result = LambdaSummaryClass.create(caller, invoke);
+      classSummaries.put(bootstrap, result);
+    }
+    return result;
+  }
 }

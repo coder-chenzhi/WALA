@@ -1,7 +1,12 @@
-# -*- mode: sh; sh-shell: sh -*-
+#!/bin/sh -eux
 
 caches="$HOME/.gradle/caches"
 
 rm -rf \
-   "$caches/modules-2/modules-2.lock" \
    "$caches"/*/plugin-resolution
+
+find "$caches" -name buildSrc.jar -delete
+find "$caches" -name cache.properties -delete
+find "$caches" -name workerMain -type d -prune -exec rm -r "{}" \;
+find "$caches" -name '*.bin' -delete
+find "$caches" -name '*.lock' -delete

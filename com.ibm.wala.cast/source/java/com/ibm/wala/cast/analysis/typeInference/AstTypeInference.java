@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *****************************************************************************/
+ */
 package com.ibm.wala.cast.analysis.typeInference;
 
 import com.ibm.wala.analysis.typeInference.ConeType;
@@ -31,15 +31,15 @@ public abstract class AstTypeInference extends TypeInference {
 
   private final TypeAbstraction booleanType;
 
-  protected class AstTypeOperatorFactory extends TypeOperatorFactory implements AstInstructionVisitor {
+  protected class AstTypeOperatorFactory extends TypeOperatorFactory
+      implements AstInstructionVisitor {
     @Override
     public void visitPropertyRead(AstPropertyRead inst) {
       result = new DeclaredTypeOperator(new ConeType(cha.getRootClass()));
     }
 
     @Override
-    public void visitPropertyWrite(AstPropertyWrite inst) {
-    }
+    public void visitPropertyWrite(AstPropertyWrite inst) {}
 
     @Override
     public void visitAstLexicalRead(AstLexicalRead inst) {
@@ -47,8 +47,7 @@ public abstract class AstTypeInference extends TypeInference {
     }
 
     @Override
-    public void visitAstLexicalWrite(AstLexicalWrite inst) {
-    }
+    public void visitAstLexicalWrite(AstLexicalWrite inst) {}
 
     @Override
     public void visitAstGlobalRead(AstGlobalRead instruction) {
@@ -56,12 +55,10 @@ public abstract class AstTypeInference extends TypeInference {
     }
 
     @Override
-    public void visitAstGlobalWrite(AstGlobalWrite instruction) {
-    }
+    public void visitAstGlobalWrite(AstGlobalWrite instruction) {}
 
     @Override
-    public void visitAssert(AstAssertInstruction instruction) {
-    }
+    public void visitAssert(AstAssertInstruction instruction) {}
 
     @Override
     public void visitEachElementGet(EachElementGetInstruction inst) {
@@ -69,8 +66,7 @@ public abstract class AstTypeInference extends TypeInference {
     }
 
     @Override
-    public void visitEachElementHasNext(EachElementHasNextInstruction inst) {
-    }
+    public void visitEachElementHasNext(EachElementHasNextInstruction inst) {}
 
     @Override
     public void visitIsDefined(AstIsDefinedInstruction inst) {
@@ -80,9 +76,7 @@ public abstract class AstTypeInference extends TypeInference {
     }
 
     @Override
-    public void visitEcho(AstEchoInstruction inst) {
-
-    }
+    public void visitEcho(AstEchoInstruction inst) {}
   }
 
   public AstTypeInference(IR ir, TypeAbstraction booleanType, boolean doPrimitives) {
@@ -94,5 +88,4 @@ public abstract class AstTypeInference extends TypeInference {
   protected void initialize() {
     init(ir, new TypeVarFactory(), new AstTypeOperatorFactory());
   }
-
 }

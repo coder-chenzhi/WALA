@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,12 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *****************************************************************************/
+ */
 package com.ibm.wala.cast.ipa.callgraph;
-
-import java.util.ConcurrentModificationException;
-import java.util.Set;
-import java.util.function.Function;
 
 import com.ibm.wala.cast.ir.cfg.AstInducedCFG;
 import com.ibm.wala.cast.ir.ssa.AstLexicalRead;
@@ -36,6 +32,9 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Iterator2Iterable;
+import java.util.ConcurrentModificationException;
+import java.util.Set;
+import java.util.function.Function;
 
 public class AstCallGraph extends ExplicitCallGraph {
   public AstCallGraph(IMethod fakeRootClass2, AnalysisOptions options, IAnalysisCacheView cache) {
@@ -44,11 +43,20 @@ public class AstCallGraph extends ExplicitCallGraph {
 
   public static class AstFakeRoot extends AbstractRootMethod {
 
-    public AstFakeRoot(MethodReference rootMethod, IClass declaringClass, IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache) {
+    public AstFakeRoot(
+        MethodReference rootMethod,
+        IClass declaringClass,
+        IClassHierarchy cha,
+        AnalysisOptions options,
+        IAnalysisCacheView cache) {
       super(rootMethod, declaringClass, cha, options, cache);
     }
 
-    public AstFakeRoot(MethodReference rootMethod, IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache) {
+    public AstFakeRoot(
+        MethodReference rootMethod,
+        IClassHierarchy cha,
+        AnalysisOptions options,
+        IAnalysisCacheView cache) {
       super(rootMethod, cha, options, cache);
     }
 
@@ -64,31 +72,46 @@ public class AstCallGraph extends ExplicitCallGraph {
     }
   }
 
-  public static abstract class ScriptFakeRoot extends AstFakeRoot {
+  public abstract static class ScriptFakeRoot extends AstFakeRoot {
 
-    public ScriptFakeRoot(MethodReference rootMethod, IClass declaringClass, IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache) {
+    public ScriptFakeRoot(
+        MethodReference rootMethod,
+        IClass declaringClass,
+        IClassHierarchy cha,
+        AnalysisOptions options,
+        IAnalysisCacheView cache) {
       super(rootMethod, declaringClass, cha, options, cache);
     }
 
-    public ScriptFakeRoot(MethodReference rootMethod, IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache) {
+    public ScriptFakeRoot(
+        MethodReference rootMethod,
+        IClassHierarchy cha,
+        AnalysisOptions options,
+        IAnalysisCacheView cache) {
       super(rootMethod, cha, options, cache);
     }
 
-    public abstract SSAAbstractInvokeInstruction addDirectCall(int functionVn, int[] argVns, CallSiteReference callSite);
+    public abstract SSAAbstractInvokeInstruction addDirectCall(
+        int functionVn, int[] argVns, CallSiteReference callSite);
 
     @Override
     public SSANewInstruction addAllocation(TypeReference T) {
-      if (cha.isSubclassOf(cha.lookupClass(T), cha.lookupClass(declaringClass.getClassLoader().getLanguage().getRootType()))) {
+      if (cha.isSubclassOf(
+          cha.lookupClass(T),
+          cha.lookupClass(declaringClass.getClassLoader().getLanguage().getRootType()))) {
         int instance = nextLocal++;
         NewSiteReference ref = NewSiteReference.make(statements.size(), T);
-        SSANewInstruction result = getDeclaringClass().getClassLoader().getInstructionFactory().NewInstruction(statements.size(), instance, ref);
+        SSANewInstruction result =
+            getDeclaringClass()
+                .getClassLoader()
+                .getInstructionFactory()
+                .NewInstruction(statements.size(), instance, ref);
         statements.add(result);
         return result;
       } else {
         return super.addAllocation(T);
       }
     }
-
   }
 
   public class AstCGNode extends ExplicitNode {
@@ -120,7 +143,7 @@ public class AstCallGraph extends ExplicitCallGraph {
     }
 
     private boolean hasAllCallbacks(Set<Function<Object, Object>> callbacks) {
-      return callbacks != null && callbacks.containsAll(callbacks);
+      return callbacks != null && this.callbacks.containsAll(callbacks);
     }
 
     public void addCallback(Function<Object, Object> callback) {
@@ -154,7 +177,7 @@ public class AstCallGraph extends ExplicitCallGraph {
     public void clearMutatedCache(CallSiteReference cs) {
       targets.remove(cs.getProgramCounter());
     }
-    
+
     @Override
     public boolean addTarget(CallSiteReference site, CGNode node) {
       if (super.addTarget(site, node)) {
@@ -173,5 +196,4 @@ public class AstCallGraph extends ExplicitCallGraph {
   protected ExplicitNode makeNode(IMethod method, Context context) {
     return new AstCGNode(method, context);
   }
-
 }

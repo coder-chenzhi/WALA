@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2007 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,13 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.util.scope;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
@@ -24,12 +19,17 @@ import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.strings.Atom;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
- * This class represents entry points ({@link Entrypoint})s of JUnit test methods. JUnit test methods are those invoked by the JUnit
- * framework reflectively The entry points can be used to specify entry points of a call graph.
- * 
- * This implementation only handles JUnit 3.
+ * This class represents entry points ({@link Entrypoint})s of JUnit test methods. JUnit test
+ * methods are those invoked by the JUnit framework reflectively The entry points can be used to
+ * specify entry points of a call graph.
+ *
+ * <p>This implementation only handles JUnit 3.
  */
 public class JUnitEntryPoints {
 
@@ -37,7 +37,7 @@ public class JUnitEntryPoints {
 
   /**
    * Construct JUnit entrypoints for all the JUnit test methods in the given scope.
-   * 
+   *
    * @throws IllegalArgumentException if cha is null
    */
   public static Iterable<Entrypoint> make(IClassHierarchy cha) {
@@ -72,10 +72,13 @@ public class JUnitEntryPoints {
 
   /**
    * Construct JUnit entrypoints for the specified test method in a scope.
-   * 
+   *
    * @throws IllegalArgumentException if cha is null
    */
-  public static Iterable<Entrypoint> makeOne(IClassHierarchy cha, String targetPackageName, String targetSimpleClassName,
+  public static Iterable<Entrypoint> makeOne(
+      IClassHierarchy cha,
+      String targetPackageName,
+      String targetSimpleClassName,
       String targetMethodName) {
     if (cha == null) {
       throw new IllegalArgumentException("cha is null");
@@ -83,7 +86,8 @@ public class JUnitEntryPoints {
     // assume test methods don't have parameters
     final Atom targetPackageAtom = Atom.findOrCreateAsciiAtom(targetPackageName);
     final Atom targetSimpleClassAtom = Atom.findOrCreateAsciiAtom(targetSimpleClassName);
-    final TypeName targetType = TypeName.findOrCreateClass(targetPackageAtom, targetSimpleClassAtom);
+    final TypeName targetType =
+        TypeName.findOrCreateClass(targetPackageAtom, targetSimpleClassAtom);
     final Atom targetMethodAtom = Atom.findOrCreateAsciiAtom(targetMethodName);
 
     if (DEBUG) {
@@ -118,9 +122,9 @@ public class JUnitEntryPoints {
   }
 
   /**
-   * Check if the given class is a JUnit test class. A JUnit test class is a subclass of junit.framework.TestCase or
-   * junit.framework.TestSuite.
-   * 
+   * Check if the given class is a JUnit test class. A JUnit test class is a subclass of
+   * junit.framework.TestCase or junit.framework.TestSuite.
+   *
    * @throws IllegalArgumentException if klass is null
    */
   public static boolean isJUnitTestCase(IClass klass) {
@@ -145,9 +149,10 @@ public class JUnitEntryPoints {
   }
 
   /**
-   * Check if the given method is a JUnit test method, assuming that it is declared in a JUnit test class. A method is a JUnit test
-   * method if the name has the prefix "test", or its name is "setUp" or "tearDown".
-   * 
+   * Check if the given method is a JUnit test method, assuming that it is declared in a JUnit test
+   * class. A method is a JUnit test method if the name has the prefix "test", or its name is
+   * "setUp" or "tearDown".
+   *
    * @throws IllegalArgumentException if m is null
    */
   public static boolean isJUnitMethod(IMethod m) {
@@ -159,12 +164,12 @@ public class JUnitEntryPoints {
     }
     Atom method = m.getName();
     String methodName = method.toString();
-    return methodName.startsWith("test") || methodName.equals("setUp") || methodName.equals("tearDown");
+    return methodName.startsWith("test")
+        || methodName.equals("setUp")
+        || methodName.equals("tearDown");
   }
 
-  /**
-   * Get the "setUp" and "tearDown" methods in the given class
-   */
+  /** Get the "setUp" and "tearDown" methods in the given class */
   public static Set<IMethod> getSetUpTearDownMethods(IClass testClass) {
     final Atom junitPackage = Atom.findOrCreateAsciiAtom("junit/framework");
     final Atom junitClass = Atom.findOrCreateAsciiAtom("TestCase");
@@ -178,12 +183,17 @@ public class JUnitEntryPoints {
     Set<IMethod> result = HashSetFactory.make();
 
     IClass currClass = testClass;
-    while (currClass != null && !currClass.getName().equals(junitTestCaseType) && !currClass.getName().equals(junitTestSuiteType)) {
+    while (currClass != null
+        && !currClass.getName().equals(junitTestCaseType)
+        && !currClass.getName().equals(junitTestSuiteType)) {
 
       for (IMethod method : currClass.getDeclaredMethods()) {
 
         final Atom methodAtom = method.getName();
-        if (methodAtom.equals(setUpMethodAtom) || methodAtom.equals(tearDownMethodAtom) || method.isClinit() || method.isInit()) {
+        if (methodAtom.equals(setUpMethodAtom)
+            || methodAtom.equals(tearDownMethodAtom)
+            || method.isClinit()
+            || method.isInit()) {
           result.add(method);
         }
       }

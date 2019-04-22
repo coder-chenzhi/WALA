@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2013 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.cast.js.translator;
 
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
@@ -17,9 +17,8 @@ import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceFileModule;
 import com.ibm.wala.classLoader.SourceModule;
 
-public abstract class JavaScriptLoopUnwindingTranslatorFactory 
-  implements JavaScriptTranslatorFactory 
-{
+public abstract class JavaScriptLoopUnwindingTranslatorFactory
+    implements JavaScriptTranslatorFactory {
   private final int unwindFactor;
 
   protected JavaScriptLoopUnwindingTranslatorFactory(int unwindFactor) {
@@ -34,17 +33,16 @@ public abstract class JavaScriptLoopUnwindingTranslatorFactory
 
   @Override
   public TranslatorToCAst make(CAst ast, final ModuleEntry M) {
-	  String N;
-	  if (M instanceof SourceFileModule) {
-		  N = ((SourceFileModule) M).getClassName();
-	  } else {
-	      N = M.getName();
-	  }
+    String N;
+    if (M instanceof SourceFileModule) {
+      N = ((SourceFileModule) M).getClassName();
+    } else {
+      N = M.getName();
+    }
 
-	  TranslatorToCAst xlator = translateInternal(ast, (SourceModule)M, N);
-	  xlator.addRewriter(ast1 -> new AstLoopUnwinder(ast1, true, unwindFactor), false);
-	  
-	  return xlator;
+    TranslatorToCAst xlator = translateInternal(ast, (SourceModule) M, N);
+    xlator.addRewriter(ast1 -> new AstLoopUnwinder(ast1, true, unwindFactor), false);
+
+    return xlator;
   }
 }
-

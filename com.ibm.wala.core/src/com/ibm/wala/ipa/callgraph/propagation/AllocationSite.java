@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,10 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.ipa.callgraph.propagation;
-
-import java.util.Iterator;
 
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
@@ -21,11 +19,13 @@ import com.ibm.wala.ipa.callgraph.Context;
 import com.ibm.wala.util.collections.FilterIterator;
 import com.ibm.wala.util.collections.MapIterator;
 import com.ibm.wala.util.collections.Pair;
+import java.util.Iterator;
 
 /**
- * An {@link InstanceKey} which represents a {@link NewSiteReference} in some {@link IMethod}. Note that this differs from
- * {@link AllocationSiteInNode}, which represents an allocation in a {@link CGNode} that may carry some {@link Context}. This type
- * is useful for a context-<em>insensitive</em> heap abstraction.
+ * An {@link InstanceKey} which represents a {@link NewSiteReference} in some {@link IMethod}. Note
+ * that this differs from {@link AllocationSiteInNode}, which represents an allocation in a {@link
+ * CGNode} that may carry some {@link Context}. This type is useful for a
+ * context-<em>insensitive</em> heap abstraction.
  */
 public class AllocationSite implements InstanceKey {
   private final NewSiteReference site;
@@ -42,7 +42,7 @@ public class AllocationSite implements InstanceKey {
 
   @Override
   public String toString() {
-    return "SITE{" + getMethod() + ":" + site + "}";
+    return "SITE{" + getMethod() + ':' + site + '}';
   }
 
   public NewSiteReference getSite() {
@@ -69,23 +69,16 @@ public class AllocationSite implements InstanceKey {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     final AllocationSite other = (AllocationSite) obj;
     if (method == null) {
-      if (other.method != null)
-        return false;
-    } else if (!method.equals(other.method))
-      return false;
+      if (other.method != null) return false;
+    } else if (!method.equals(other.method)) return false;
     if (site == null) {
-      if (other.site != null)
-        return false;
-    } else if (!site.equals(other.site))
-      return false;
+      if (other.site != null) return false;
+    } else if (!site.equals(other.site)) return false;
     return true;
   }
 
@@ -93,9 +86,7 @@ public class AllocationSite implements InstanceKey {
   public Iterator<Pair<CGNode, NewSiteReference>> getCreationSites(CallGraph CG) {
     return new MapIterator<>(
         new FilterIterator<>(
-          CG.getNodes(method.getReference()).iterator(),
-          o -> o.getMethod().equals(method)
-        ), 
+            CG.getNodes(method.getReference()).iterator(), o -> o.getMethod().equals(method)),
         object -> Pair.make(object, site));
   }
 }

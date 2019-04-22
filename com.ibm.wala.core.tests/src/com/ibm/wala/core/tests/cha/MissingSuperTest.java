@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2008 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.core.tests.cha;
 
 import com.ibm.wala.classLoader.IClass;
@@ -25,30 +25,27 @@ import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.config.AnalysisScopeReader;
 import com.ibm.wala.util.io.FileProvider;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.Collection;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class MissingSuperTest extends WalaTestCase {
 
   /**
-   * Test handling of an invalid class where a non-abstract method has no code.
-   * We want to throw an exception rather than crash.
-   * 
-   * @throws IOException
-   * @throws ClassHierarchyException
+   * Test handling of an invalid class where a non-abstract method has no code. We want to throw an
+   * exception rather than crash.
    */
   @Test
   public void testMissingSuper() throws IOException, ClassHierarchyException {
-    AnalysisScope scope = AnalysisScopeReader.readJavaScope(TestConstants.WALA_TESTDATA,
-        (new FileProvider()).getFile("J2SEClassHierarchyExclusions.txt"),
-        MissingSuperTest.class.getClassLoader());
+    AnalysisScope scope =
+        AnalysisScopeReader.readJavaScope(
+            TestConstants.WALA_TESTDATA,
+            (new FileProvider()).getFile("J2SEClassHierarchyExclusions.txt"),
+            MissingSuperTest.class.getClassLoader());
 
-    TypeReference ref = TypeReference.findOrCreate(ClassLoaderReference.Application,
-        "Lmissingsuper/MissingSuper");
+    TypeReference ref =
+        TypeReference.findOrCreate(ClassLoaderReference.Application, "Lmissingsuper/MissingSuper");
 
     // without phantom classes, won't be able to resolve
     ClassHierarchy cha = ClassHierarchyFactory.make(scope);
@@ -74,9 +71,9 @@ public class MissingSuperTest extends WalaTestCase {
     }
     // there should be one PhantomClass in the Application class loader
     boolean found = false;
-    for (IClass klass2: cha) {
-      if (klass2 instanceof PhantomClass && klass2.getReference().getClassLoader().equals
-          (ClassLoaderReference.Application)) {
+    for (IClass klass2 : cha) {
+      if (klass2 instanceof PhantomClass
+          && klass2.getReference().getClassLoader().equals(ClassLoaderReference.Application)) {
         Assert.assertEquals("Lmissingsuper/Super", klass2.getReference().getName().toString());
         found = true;
       }

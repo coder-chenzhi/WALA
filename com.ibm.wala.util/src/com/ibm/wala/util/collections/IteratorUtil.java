@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,18 +7,15 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.util.collections;
 
 import java.util.Iterator;
-/**
- * utilities dealing with Iterators
- */
+
+/** utilities dealing with Iterators */
 public class IteratorUtil {
 
-  /**
-   * @return true iff the Iterator returns some elements which equals() the object o
-   */
+  /** @return true iff the Iterator returns some elements which equals() the object o */
   public static <T> boolean contains(Iterator<? extends T> it, T o) {
     if (it == null) {
       throw new IllegalArgumentException("null it");
@@ -31,7 +28,7 @@ public class IteratorUtil {
     return false;
   }
 
-  public final static <T> int count(Iterator<T> it) throws IllegalArgumentException {
+  public static final <T> int count(Iterator<T> it) throws IllegalArgumentException {
     if (it == null) {
       throw new IllegalArgumentException("it == null");
     }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,12 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.client;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.jar.JarFile;
 
 import com.ibm.wala.analysis.pointers.BasicHeapGraph;
 import com.ibm.wala.analysis.pointers.HeapGraph;
@@ -45,93 +41,83 @@ import com.ibm.wala.util.config.AnalysisScopeReader;
 import com.ibm.wala.util.config.SetOfClasses;
 import com.ibm.wala.util.debug.Assertions;
 import com.ibm.wala.util.io.FileProvider;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.jar.JarFile;
 
 /**
  * Abstract base class for analysis engine implementations
- * 
- * Some clients choose to build on this, but many don't. I usually don't in new code; I usually don't find the re-use enabled by
- * this class compelling. I would probably nuke this except for some legacy code that uses it.
+ *
+ * <p>Some clients choose to build on this, but many don't. I usually don't in new code; I usually
+ * don't find the re-use enabled by this class compelling. I would probably nuke this except for
+ * some legacy code that uses it.
  */
-public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends CallGraphBuilder<I>, Y> implements AnalysisEngine {
+public abstract class AbstractAnalysisEngine<
+        I extends InstanceKey, X extends CallGraphBuilder<I>, Y>
+    implements AnalysisEngine {
 
   public interface EntrypointBuilder {
     Iterable<Entrypoint> createEntrypoints(AnalysisScope scope, IClassHierarchy cha);
   }
 
-  public final static String SYNTHETIC_J2SE_MODEL = "SyntheticJ2SEModel.txt";
+  public static final String SYNTHETIC_J2SE_MODEL = "SyntheticJ2SEModel.txt";
 
   /**
    * DEBUG_LEVEL:
+   *
    * <ul>
-   * <li>0 No output
-   * <li>1 Print some simple stats and warning information
-   * <li>2 Detailed debugging
+   *   <li>0 No output
+   *   <li>1 Print some simple stats and warning information
+   *   <li>2 Detailed debugging
    * </ul>
    */
   protected static final int DEBUG_LEVEL = 1;
 
-  /**
-   * Name of the file which holds the class hierarchy exclusions directives for this analysis.
-   */
+  /** Name of the file which holds the class hierarchy exclusions directives for this analysis. */
   private String exclusionsFile = "J2SEClassHierarchyExclusions.txt";
 
-  /**
-   * The modules to analyze
-   */
+  /** The modules to analyze */
   protected Collection<? extends Module> moduleFiles;
 
-  /**
-   * A representation of the analysis scope
-   */
+  /** A representation of the analysis scope */
   protected AnalysisScope scope;
 
-  /**
-   * A representation of the analysis options
-   */
+  /** A representation of the analysis options */
   private AnalysisOptions options;
 
-  /**
-   * A cache of IRs and stuff
-   */
+  /** A cache of IRs and stuff */
   private IAnalysisCacheView cache = makeDefaultCache();
 
-  /**
-   * The standard J2SE libraries to analyze
-   */
+  /** The standard J2SE libraries to analyze */
   protected Module[] j2seLibs;
 
-  /**
-   * Whether to perform closed-world analysis of an application
-   */
+  /** Whether to perform closed-world analysis of an application */
   private boolean closedWorld = false;
 
-  /**
-   * Governing class hierarchy
-   */
+  /** Governing class hierarchy */
   private IClassHierarchy cha;
 
-  /**
-   * Governing call graph
-   */
+  /** Governing call graph */
   protected CallGraph cg;
 
-  /**
-   * Results of pointer analysis
-   */
-  protected PointerAnalysis<? super I> pointerAnalysis;
+  /** Results of pointer analysis */
+  protected PointerAnalysis<I> pointerAnalysis;
 
-  /**
-   * Graph view of flow of pointers between heap abstractions
-   */
-  private HeapGraph heapGraph;
+  /** Graph view of flow of pointers between heap abstractions */
+  private HeapGraph<?> heapGraph;
 
   private EntrypointBuilder entrypointBuilder = this::makeDefaultEntrypoints;
 
-  protected abstract CallGraphBuilder<? super I> getCallGraphBuilder(IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache2);
+  protected abstract CallGraphBuilder<I> getCallGraphBuilder(
+      IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache2);
 
-  protected CallGraphBuilder<? super I> buildCallGraph(IClassHierarchy cha, AnalysisOptions options, boolean savePointerAnalysis,
-      IProgressMonitor monitor) throws IllegalArgumentException, CancelException {
-    CallGraphBuilder<? super I> builder = getCallGraphBuilder(cha, options, cache);
+  protected CallGraphBuilder<I> buildCallGraph(
+      IClassHierarchy cha,
+      AnalysisOptions options,
+      boolean savePointerAnalysis,
+      IProgressMonitor monitor)
+      throws IllegalArgumentException, CancelException {
+    CallGraphBuilder<I> builder = getCallGraphBuilder(cha, options, cache);
 
     cg = builder.makeCallGraph(options, monitor);
 
@@ -147,18 +133,18 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
     this.moduleFiles = moduleFiles;
   }
 
-  /**
-   * Set up the AnalysisScope object
-   * 
-   * @throws IOException
-   */
+  /** Set up the AnalysisScope object */
   public void buildAnalysisScope() throws IOException {
     if (j2seLibs == null) {
-      Assertions.UNREACHABLE("no j2selibs specified. You probably did not call AppAnalysisEngine.setJ2SELibrary.");
+      Assertions.UNREACHABLE(
+          "no j2selibs specified. You probably did not call AppAnalysisEngine.setJ2SELibrary.");
     }
 
-    scope = AnalysisScopeReader.readJavaScope(SYNTHETIC_J2SE_MODEL, (new FileProvider()).getFile(getExclusionsFile()), getClass()
-        .getClassLoader());
+    scope =
+        AnalysisScopeReader.readJavaScope(
+            SYNTHETIC_J2SE_MODEL,
+            (new FileProvider()).getFile(getExclusionsFile()),
+            getClass().getClassLoader());
 
     // add standard libraries
     for (Module j2seLib : j2seLibs) {
@@ -169,10 +155,7 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
     addApplicationModulesToScope();
   }
 
-  
-  /**
-   * @return a IClassHierarchy object for this analysis scope
-   */
+  /** @return a IClassHierarchy object for this analysis scope */
   public IClassHierarchy buildClassHierarchy() {
     IClassHierarchy cha = null;
     ClassLoaderFactory factory = makeClassLoaderFactory(getScope().getExclusions());
@@ -188,7 +171,7 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
 
   protected ClassLoaderFactory makeClassLoaderFactory(SetOfClasses exclusions) {
     return new ClassLoaderFactoryImpl(exclusions);
-   }
+  }
 
   public IClassHierarchy getClassHierarchy() {
     return cha;
@@ -198,16 +181,12 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
     return this.cha = cha;
   }
 
-  /**
-   * @return Returns the call graph
-   */
+  /** @return Returns the call graph */
   protected CallGraph getCallGraph() {
     return cg;
   }
 
-  /**
-   * Add the application modules to the analysis scope.
-   */
+  /** Add the application modules to the analysis scope. */
   protected void addApplicationModulesToScope() {
     ClassLoaderReference app = scope.getApplicationLoader();
     for (Object o : moduleFiles) {
@@ -235,10 +214,7 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
     if (libs == null) {
       throw new IllegalArgumentException("libs is null");
     }
-    this.j2seLibs = new Module[libs.length];
-    for (int i = 0; i < libs.length; i++) {
-      j2seLibs[i] = libs[i];
-    }
+    this.j2seLibs = libs.clone();
   }
 
   @Override
@@ -258,7 +234,7 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
     return pointerAnalysis;
   }
 
-  public HeapGraph getHeapGraph() {
+  public HeapGraph<?> getHeapGraph() {
     if (heapGraph == null) {
       heapGraph = new BasicHeapGraph<>(getPointerAnalysis(), cg);
     }
@@ -268,7 +244,7 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
   public SDG<? super I> getSDG(DataDependenceOptions data, ControlDependenceOptions ctrl) {
     return new SDG<>(getCallGraph(), getPointerAnalysis(), data, ctrl);
   }
-  
+
   public String getExclusionsFile() {
     return exclusionsFile;
   }
@@ -296,22 +272,20 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
 
   /**
    * Builds the call graph for the analysis scope in effect, using all of the given entry points.
-   * 
-   * @throws CancelException
-   * @throws IllegalArgumentException
-   * @throws IOException
    */
-  public CallGraphBuilder<? super I> defaultCallGraphBuilder() throws IllegalArgumentException, CancelException, IOException {
+  public CallGraphBuilder<? super I> defaultCallGraphBuilder()
+      throws IllegalArgumentException, IOException {
     buildAnalysisScope();
     IClassHierarchy cha = buildClassHierarchy();
     setClassHierarchy(cha);
     Iterable<Entrypoint> eps = entrypointBuilder.createEntrypoints(scope, cha);
     options = getDefaultOptions(eps);
     cache = makeDefaultCache();
-    return buildCallGraph(cha, options, true, null);
+    return getCallGraphBuilder(cha, options, cache);
   }
 
-  public CallGraph buildDefaultCallGraph() throws IllegalArgumentException, CancelException, IOException {
+  public CallGraph buildDefaultCallGraph()
+      throws IllegalArgumentException, CancelException, IOException {
     return defaultCallGraphBuilder().makeCallGraph(options, null);
   }
 
@@ -326,6 +300,5 @@ public abstract class AbstractAnalysisEngine<I extends InstanceKey, X extends Ca
   @SuppressWarnings("unused")
   public Y performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
     return null;
-    
   }
 }

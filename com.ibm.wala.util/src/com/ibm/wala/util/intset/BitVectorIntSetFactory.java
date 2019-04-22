@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,19 +7,15 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.util.intset;
 
 import java.util.TreeSet;
 
-/**
- */
+/** */
 public class BitVectorIntSetFactory implements MutableIntSetFactory<BitVectorIntSet> {
 
-  /**
-   * @param set
-   * @throws IllegalArgumentException  if set is null
-   */
+  /** @throws IllegalArgumentException if set is null */
   @Override
   public BitVectorIntSet make(int[] set) {
     if (set == null) {
@@ -41,9 +37,6 @@ public class BitVectorIntSetFactory implements MutableIntSetFactory<BitVectorInt
     }
   }
 
-  /**
-   * @param string
-   */
   @Override
   public BitVectorIntSet parse(String string) throws NumberFormatException {
     int[] data = SparseIntSet.parseIntArray(string);
@@ -72,5 +65,4 @@ public class BitVectorIntSetFactory implements MutableIntSetFactory<BitVectorInt
   public BitVectorIntSet make() {
     return new BitVectorIntSet();
   }
-
 }

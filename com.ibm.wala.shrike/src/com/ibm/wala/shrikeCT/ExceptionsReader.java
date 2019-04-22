@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002,2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,16 +7,12 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.shrikeCT;
 
-/**
- * This class reads Exceptions attributes.
- */
+/** This class reads Exceptions attributes. */
 public final class ExceptionsReader extends AttributeReader {
-  /**
-   * Build a reader for the attribute 'iter'.
-   */
+  /** Build a reader for the attribute 'iter'. */
   public ExceptionsReader(ClassReader.AttrIterator iter) throws InvalidClassFileException {
     super(iter, "Exceptions");
 
@@ -25,9 +21,7 @@ public final class ExceptionsReader extends AttributeReader {
     checkSizeEquals(attr + 8, 2 * count);
   }
 
-  /**
-   * @return the indices of the constant pool items for the exceptions
-   */
+  /** @return the indices of the constant pool items for the exceptions */
   public int[] getRawTable() {
     int count = cr.getUShort(attr + 6);
     int[] r = new int[count];
@@ -37,9 +31,7 @@ public final class ExceptionsReader extends AttributeReader {
     return r;
   }
 
-  /**
-   * @return the classes of exceptions that can be thrown by the method
-   */
+  /** @return the classes of exceptions that can be thrown by the method */
   public String[] getClasses() throws InvalidClassFileException {
     int count = cr.getUShort(attr + 6);
     String[] r = new String[count];

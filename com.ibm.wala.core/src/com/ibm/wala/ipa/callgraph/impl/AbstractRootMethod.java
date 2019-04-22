@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,13 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.ipa.callgraph.impl;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
 
 import com.ibm.wala.cfg.InducedCFG;
 import com.ibm.wala.classLoader.ArrayClass;
@@ -49,10 +44,12 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.debug.Assertions;
 import com.ibm.wala.util.warnings.Warning;
 import com.ibm.wala.util.warnings.Warnings;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
-/**
- * A synthetic method from the {@link FakeRootClass}
- */
+/** A synthetic method from the {@link FakeRootClass} */
 public abstract class AbstractRootMethod extends SyntheticMethod {
 
   public final ArrayList<SSAInstruction> statements = new ArrayList<>();
@@ -60,8 +57,8 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
   private Map<ConstantValue, Integer> constant2ValueNumber = HashMapFactory.make();
 
   /**
-   * The number of the next local value number available for the fake root method. Note that we reserve value number 1 to represent
-   * the value "any exception caught by the root method"
+   * The number of the next local value number available for the fake root method. Note that we
+   * reserve value number 1 to represent the value "any exception caught by the root method"
    */
   public int nextLocal = 2;
 
@@ -73,7 +70,11 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
 
   protected final SSAInstructionFactory insts;
 
-  public AbstractRootMethod(MethodReference method, IClass declaringClass, final IClassHierarchy cha, AnalysisOptions options,
+  public AbstractRootMethod(
+      MethodReference method,
+      IClass declaringClass,
+      final IClassHierarchy cha,
+      AnalysisOptions options,
       IAnalysisCacheView cache) {
     super(method, declaringClass, true, false);
     this.cha = cha;
@@ -83,15 +84,25 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
     if (cache == null) {
       throw new IllegalArgumentException("null cache");
     }
-    // I'd like to enforce that declaringClass is a FakeRootClass ... but CASt would currently break.
+    // I'd like to enforce that declaringClass is a FakeRootClass ... but CASt would currently
+    // break.
     // so checking dynamically instead.
     if (declaringClass instanceof FakeRootClass) {
       ((FakeRootClass) declaringClass).addMethod(this);
     }
   }
 
-  public AbstractRootMethod(MethodReference method, final IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache) {
-    this(method, new FakeRootClass(method.getDeclaringClass().getClassLoader(), cha), cha, options, cache);
+  public AbstractRootMethod(
+      MethodReference method,
+      final IClassHierarchy cha,
+      AnalysisOptions options,
+      IAnalysisCacheView cache) {
+    this(
+        method,
+        new FakeRootClass(method.getDeclaringClass().getClassLoader(), cha),
+        cha,
+        options,
+        cache);
   }
 
   /*
@@ -115,9 +126,8 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
     Map<Integer, ConstantValue> constants = null;
     if (!constant2ValueNumber.isEmpty()) {
       constants = HashMapFactory.make(constant2ValueNumber.size());
-      for (ConstantValue c : constant2ValueNumber.keySet()) {
-        int vn = constant2ValueNumber.get(c);
-        constants.put(vn, c);
+      for (Map.Entry<ConstantValue, Integer> entry : constant2ValueNumber.entrySet()) {
+        constants.put(entry.getValue(), entry.getKey());
       }
     }
     InducedCFG cfg = makeControlFlowGraph(instrs);
@@ -136,21 +146,23 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
     if (site == null) {
       throw new IllegalArgumentException("site is null");
     }
-    CallSiteReference newSite = CallSiteReference.make(statements.size(), site.getDeclaredTarget(), site.getInvocationCode());
+    CallSiteReference newSite =
+        CallSiteReference.make(
+            statements.size(), site.getDeclaredTarget(), site.getInvocationCode());
     SSAAbstractInvokeInstruction s = null;
     if (newSite.getDeclaredTarget().getReturnType().equals(TypeReference.Void)) {
       s = insts.InvokeInstruction(statements.size(), params, nextLocal++, newSite, null);
     } else {
-      s = insts.InvokeInstruction(statements.size(), nextLocal++, params, nextLocal++, newSite, null);
+      s =
+          insts.InvokeInstruction(
+              statements.size(), nextLocal++, params, nextLocal++, newSite, null);
     }
     statements.add(s);
     cache.invalidate(this, Everywhere.EVERYWHERE);
     return s;
   }
 
-  /**
-   * Add a return statement
-   */
+  /** Add a return statement */
   public SSAReturnInstruction addReturn(int vn, boolean isPrimitive) {
     SSAReturnInstruction s = insts.ReturnInstruction(statements.size(), vn, isPrimitive);
     statements.add(s);
@@ -160,9 +172,9 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
 
   /**
    * Add a New statement of the given type
-   * 
-   * Side effect: adds call to default constructor of given type if one exists.
-   * 
+   *
+   * <p>Side effect: adds call to default constructor of given type if one exists.
+   *
    * @return instruction added, or null
    * @throws IllegalArgumentException if T is null
    */
@@ -170,14 +182,12 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
     return addAllocation(T, true);
   }
 
-  /**
-   * Add a New statement of the given array type and length
-   */
+  /** Add a New statement of the given array type and length */
   public SSANewInstruction add1DArrayAllocation(TypeReference T, int length) {
     int instance = nextLocal++;
     NewSiteReference ref = NewSiteReference.make(statements.size(), T);
     assert T.isArrayType();
-    assert ((ArrayClass)cha.lookupClass(T)).getDimensionality() == 1;
+    assert ((ArrayClass) cha.lookupClass(T)).getDimensionality() == 1;
     int[] sizes = new int[1];
     Arrays.fill(sizes, getValueNumberForIntConstant(length));
     SSANewInstruction result = insts.NewInstruction(statements.size(), instance, ref, sizes);
@@ -186,16 +196,14 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
     return result;
   }
 
-  /**
-   * Add a New statement of the given type
-   */
+  /** Add a New statement of the given type */
   public SSANewInstruction addAllocationWithoutCtor(TypeReference T) {
     return addAllocation(T, false);
   }
 
   /**
    * Add a New statement of the given type
-   * 
+   *
    * @return instruction added, or null
    * @throws IllegalArgumentException if T is null
    */
@@ -232,7 +240,7 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
           int alloc = nextLocal++;
           SSANewInstruction ni = null;
           if (e.isArrayType()) {
-            int[] sizes = new int[((ArrayClass)cha.lookupClass(T)).getDimensionality()];
+            int[] sizes = new int[((ArrayClass) cha.lookupClass(T)).getDimensionality()];
             Arrays.fill(sizes, getValueNumberForIntConstant(1));
             ni = insts.NewInstruction(statements.size(), alloc, n, sizes);
           } else {
@@ -241,7 +249,9 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
           statements.add(ni);
 
           // emit an astore
-          SSAArrayStoreInstruction store = insts.ArrayStoreInstruction(statements.size(), arrayRef, getValueNumberForIntConstant(0), alloc, e);
+          SSAArrayStoreInstruction store =
+              insts.ArrayStoreInstruction(
+                  statements.size(), arrayRef, getValueNumberForIntConstant(0), alloc, e);
           statements.add(store);
 
           e = e.isArrayType() ? e.getArrayElementType() : null;
@@ -251,8 +261,10 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
       if (invokeCtor) {
         IMethod ctor = cha.resolveMethod(klass, MethodReference.initSelector);
         if (ctor != null) {
-          addInvocation(new int[] { instance }, CallSiteReference.make(statements.size(), ctor.getReference(),
-              IInvokeInstruction.Dispatch.SPECIAL));
+          addInvocation(
+              new int[] {instance},
+              CallSiteReference.make(
+                  statements.size(), ctor.getReference(), IInvokeInstruction.Dispatch.SPECIAL));
         }
       }
     }
@@ -292,9 +304,7 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
     return result;
   }
 
-  /**
-   * A warning for when we fail to allocate a type in the fake root method
-   */
+  /** A warning for when we fail to allocate a type in the fake root method */
   private static class AllocationFailure extends Warning {
 
     final TypeReference t;
@@ -343,18 +353,25 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
   public void addSetInstance(final FieldReference ref, final int baseObject, final int value) {
     statements.add(insts.PutInstruction(statements.size(), baseObject, value, ref));
   }
-  
+
   public void addSetStatic(final FieldReference ref, final int value) {
     statements.add(insts.PutInstruction(statements.size(), value, ref));
   }
-  
-  public void addSetArrayField(final TypeReference elementType, final int baseObject, final int indexValue, final int value) {
-    statements.add(insts.ArrayStoreInstruction(statements.size(), baseObject, indexValue, value, elementType));
+
+  public void addSetArrayField(
+      final TypeReference elementType,
+      final int baseObject,
+      final int indexValue,
+      final int value) {
+    statements.add(
+        insts.ArrayStoreInstruction(statements.size(), baseObject, indexValue, value, elementType));
   }
 
-  public int addGetArrayField(final TypeReference elementType, final int baseObject, final int indexValue) {
+  public int addGetArrayField(
+      final TypeReference elementType, final int baseObject, final int indexValue) {
     int result = nextLocal++;
-    statements.add(insts.ArrayLoadInstruction(statements.size(), result, baseObject, indexValue, elementType));
+    statements.add(
+        insts.ArrayLoadInstruction(statements.size(), result, baseObject, indexValue, elementType));
     return result;
   }
 
@@ -409,7 +426,9 @@ public abstract class AbstractRootMethod extends SyntheticMethod {
 
       @Override
       public boolean understands(CGNode node) {
-        return node.getMethod().getDeclaringClass().equals(AbstractRootMethod.this.getDeclaringClass());
+        return node.getMethod()
+            .getDeclaringClass()
+            .equals(AbstractRootMethod.this.getDeclaringClass());
       }
 
       @Override

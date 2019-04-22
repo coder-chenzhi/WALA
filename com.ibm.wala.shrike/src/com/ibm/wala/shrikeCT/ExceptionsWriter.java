@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002,2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,20 +7,18 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.shrikeCT;
 
-/**
- * This class builds serializable Exceptions attributes.
- */
+/** This class builds serializable Exceptions attributes. */
 public final class ExceptionsWriter extends ClassWriter.Element {
-  final private int attrID;
+  private final int attrID;
 
   private int[] table;
 
   /**
    * Build an empty writer.
-   * 
+   *
    * @throws IllegalArgumentException if w is null
    */
   public ExceptionsWriter(ClassWriter w) {
@@ -52,7 +50,7 @@ public final class ExceptionsWriter extends ClassWriter.Element {
 
   /**
    * Set the list of exceptions that can be thrown.
-   * 
+   *
    * @param exceptions an array of indices to constant pool Class entries
    * @throws IllegalArgumentException if exceptions is null
    */

@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,12 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.ipa.modref;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
@@ -35,12 +31,15 @@ import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Iterator2Iterable;
 import com.ibm.wala.util.intset.OrdinalSet;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Mod-ref analysis for heap locations.
- * 
- * For each call graph node, what heap locations (as determined by a heap model) may it read or write, including it's callees
- * transitively
+ *
+ * <p>For each call graph node, what heap locations (as determined by a heap model) may it read or
+ * write, including it's callees transitively
  */
 public class ModRef<T extends InstanceKey> {
 
@@ -48,16 +47,16 @@ public class ModRef<T extends InstanceKey> {
     return new ModRef<>();
   }
 
-  public ModRef() {
-  }
+  public ModRef() {}
 
   /**
-   * For each call graph node, what heap locations (as determined by a heap model) may it write, including its callees transitively
-   * 
+   * For each call graph node, what heap locations (as determined by a heap model) may it write,
+   * including its callees transitively
+   *
    * @throws IllegalArgumentException if cg is null
-   * 
    */
-  public Map<CGNode, OrdinalSet<PointerKey>> computeMod(CallGraph cg, PointerAnalysis<T> pa, HeapExclusions heapExclude) {
+  public Map<CGNode, OrdinalSet<PointerKey>> computeMod(
+      CallGraph cg, PointerAnalysis<T> pa, HeapExclusions heapExclude) {
     if (cg == null) {
       throw new IllegalArgumentException("cg is null");
     }
@@ -66,12 +65,13 @@ public class ModRef<T extends InstanceKey> {
   }
 
   /**
-   * For each call graph node, what heap locations (as determined by a heap model) may it read, including its callees transitively
-   * 
+   * For each call graph node, what heap locations (as determined by a heap model) may it read,
+   * including its callees transitively
+   *
    * @throws IllegalArgumentException if cg is null
-   * 
    */
-  public Map<CGNode, OrdinalSet<PointerKey>> computeRef(CallGraph cg, PointerAnalysis<T> pa, HeapExclusions heapExclude) {
+  public Map<CGNode, OrdinalSet<PointerKey>> computeRef(
+      CallGraph cg, PointerAnalysis<T> pa, HeapExclusions heapExclude) {
     if (cg == null) {
       throw new IllegalArgumentException("cg is null");
     }
@@ -80,40 +80,40 @@ public class ModRef<T extends InstanceKey> {
   }
 
   /**
-   * For each call graph node, what heap locations (as determined by a heap model) may it write, including its callees transitively
-   * 
+   * For each call graph node, what heap locations (as determined by a heap model) may it write,
+   * including its callees transitively
    */
   public Map<CGNode, OrdinalSet<PointerKey>> computeMod(CallGraph cg, PointerAnalysis<T> pa) {
     return computeMod(cg, pa, null);
   }
 
   /**
-   * For each call graph node, what heap locations (as determined by a heap model) may it read, including its callees transitively
-   * 
+   * For each call graph node, what heap locations (as determined by a heap model) may it read,
+   * including its callees transitively
    */
   public Map<CGNode, OrdinalSet<PointerKey>> computeRef(CallGraph cg, PointerAnalysis<T> pa) {
     return computeRef(cg, pa, null);
   }
 
   /**
-   * For each call graph node, what heap locations (as determined by a heap model) may it write, <b> NOT </b> including its
-   * callees transitively
-   * 
-   * @param heapExclude
+   * For each call graph node, what heap locations (as determined by a heap model) may it write, <b>
+   * NOT </b> including its callees transitively
    */
-  private Map<CGNode, Collection<PointerKey>> scanForMod(CallGraph cg, final PointerAnalysis<T> pa, final HeapExclusions heapExclude) {
+  private Map<CGNode, Collection<PointerKey>> scanForMod(
+      CallGraph cg, final PointerAnalysis<T> pa, final HeapExclusions heapExclude) {
 
-    return CallGraphTransitiveClosure.collectNodeResults(cg, n -> scanNodeForMod(n, pa, heapExclude));
+    return CallGraphTransitiveClosure.collectNodeResults(
+        cg, n -> scanNodeForMod(n, pa, heapExclude));
   }
 
   /**
-   * For each call graph node, what heap locations (as determined by a heap model) may it read, <b> NOT </b> including its callees
-   * transitively
-   * 
-   * @param heapExclude
+   * For each call graph node, what heap locations (as determined by a heap model) may it read, <b>
+   * NOT </b> including its callees transitively
    */
-  private Map<CGNode, Collection<PointerKey>> scanForRef(CallGraph cg, final PointerAnalysis<T> pa, final HeapExclusions heapExclude) {
-    return CallGraphTransitiveClosure.collectNodeResults(cg, n -> scanNodeForRef(n, pa, heapExclude));
+  private Map<CGNode, Collection<PointerKey>> scanForRef(
+      CallGraph cg, final PointerAnalysis<T> pa, final HeapExclusions heapExclude) {
+    return CallGraphTransitiveClosure.collectNodeResults(
+        cg, n -> scanNodeForRef(n, pa, heapExclude));
   }
 
   public ExtendedHeapModel makeHeapModel(PointerAnalysis<T> pa) {
@@ -124,14 +124,13 @@ public class ModRef<T extends InstanceKey> {
       return new DelegatingExtendedHeapModel(heapModel);
     }
   }
-  
+
   /**
-   * For a call graph node, what heap locations (as determined by a heap model) may it write, <b> NOT </b> including it's callees
-   * transitively
-   * 
-   * @param heapExclude
+   * For a call graph node, what heap locations (as determined by a heap model) may it write, <b>
+   * NOT </b> including it's callees transitively
    */
-  private Collection<PointerKey> scanNodeForMod(final CGNode n, final PointerAnalysis<T> pa, HeapExclusions heapExclude) {
+  private Collection<PointerKey> scanNodeForMod(
+      final CGNode n, final PointerAnalysis<T> pa, HeapExclusions heapExclude) {
     Collection<PointerKey> result = HashSetFactory.make();
     final ExtendedHeapModel h = makeHeapModel(pa);
     SSAInstruction.Visitor v = makeModVisitor(n, result, pa, h);
@@ -139,7 +138,7 @@ public class ModRef<T extends InstanceKey> {
     if (ir != null) {
       for (SSAInstruction inst : Iterator2Iterable.make(ir.iterateNormalInstructions())) {
         inst.visit(v);
-        assert ! result.contains(null);
+        assert !result.contains(null);
       }
     }
     if (heapExclude != null) {
@@ -149,10 +148,11 @@ public class ModRef<T extends InstanceKey> {
   }
 
   /**
-   * For a call graph node, what heap locations (as determined by a heap model) may it read, <b> NOT </b> including it's callees
-   * transitively
+   * For a call graph node, what heap locations (as determined by a heap model) may it read, <b> NOT
+   * </b> including it's callees transitively
    */
-  private Collection<PointerKey> scanNodeForRef(final CGNode n, final PointerAnalysis<T> pa, HeapExclusions heapExclude) {
+  private Collection<PointerKey> scanNodeForRef(
+      final CGNode n, final PointerAnalysis<T> pa, HeapExclusions heapExclude) {
     Collection<PointerKey> result = HashSetFactory.make();
     final ExtendedHeapModel h = makeHeapModel(pa);
     SSAInstruction.Visitor v = makeRefVisitor(n, result, pa, h);
@@ -160,8 +160,8 @@ public class ModRef<T extends InstanceKey> {
     if (ir != null) {
       for (SSAInstruction x : Iterator2Iterable.make(ir.iterateNormalInstructions())) {
         x.visit(v);
-        assert ! result.contains(null) : x;
-     }
+        assert !result.contains(null) : x;
+      }
     }
     if (heapExclude != null) {
       result = heapExclude.filter(result);
@@ -169,7 +169,8 @@ public class ModRef<T extends InstanceKey> {
     return result;
   }
 
-  public static class RefVisitor<T extends InstanceKey, H extends ExtendedHeapModel> extends SSAInstruction.Visitor {
+  public static class RefVisitor<T extends InstanceKey, H extends ExtendedHeapModel>
+      extends SSAInstruction.Visitor {
     protected final CGNode n;
 
     protected final Collection<PointerKey> result;
@@ -220,7 +221,8 @@ public class ModRef<T extends InstanceKey> {
     }
   }
 
-  public static class ModVisitor<T extends InstanceKey, H extends ExtendedHeapModel> extends SSAInstruction.Visitor {
+  public static class ModVisitor<T extends InstanceKey, H extends ExtendedHeapModel>
+      extends SSAInstruction.Visitor {
     protected final CGNode n;
 
     protected final Collection<PointerKey> result;
@@ -231,7 +233,11 @@ public class ModRef<T extends InstanceKey> {
 
     private final boolean ignoreAllocHeapDefs;
 
-    public ModVisitor(CGNode n, Collection<PointerKey> result, H h, PointerAnalysis<T> pa,
+    public ModVisitor(
+        CGNode n,
+        Collection<PointerKey> result,
+        H h,
+        PointerAnalysis<T> pa,
         boolean ignoreAllocHeapDefs) {
       this.n = n;
       this.result = result;
@@ -331,52 +337,78 @@ public class ModRef<T extends InstanceKey> {
     }
   }
 
-  protected ModVisitor makeModVisitor(CGNode n, Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h) {
+  protected ModVisitor<T, ?> makeModVisitor(
+      CGNode n, Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h) {
     return makeModVisitor(n, result, pa, h, false);
   }
 
-  protected ModVisitor<T, ? extends ExtendedHeapModel> makeModVisitor(CGNode n, Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h,
+  protected ModVisitor<T, ?> makeModVisitor(
+      CGNode n,
+      Collection<PointerKey> result,
+      PointerAnalysis<T> pa,
+      ExtendedHeapModel h,
       boolean ignoreAllocHeapDefs) {
-    return n.getMethod().getDeclaringClass().getClassLoader().getLanguage().makeModVisitor(n, result, pa, h, ignoreAllocHeapDefs);
-    //return new ModVisitor<>(n, result, h, pa, ignoreAllocHeapDefs);
+    return n.getMethod()
+        .getDeclaringClass()
+        .getClassLoader()
+        .getLanguage()
+        .makeModVisitor(n, result, pa, h, ignoreAllocHeapDefs);
+    // return new ModVisitor<>(n, result, h, pa, ignoreAllocHeapDefs);
   }
 
   /**
    * Compute the set of {@link PointerKey}s that represent pointers that instruction s may write to.
    */
-  public Set<PointerKey> getMod(CGNode n, ExtendedHeapModel h, PointerAnalysis<T> pa, SSAInstruction s, HeapExclusions hexcl) {
+  public Set<PointerKey> getMod(
+      CGNode n,
+      ExtendedHeapModel h,
+      PointerAnalysis<T> pa,
+      SSAInstruction s,
+      HeapExclusions hexcl) {
     return getMod(n, h, pa, s, hexcl, false);
   }
 
   /**
    * Compute the set of {@link PointerKey}s that represent pointers that instruction s may write to.
    */
-  public Set<PointerKey> getMod(CGNode n, ExtendedHeapModel h, PointerAnalysis<T> pa, SSAInstruction s, HeapExclusions hexcl,
+  public Set<PointerKey> getMod(
+      CGNode n,
+      ExtendedHeapModel h,
+      PointerAnalysis<T> pa,
+      SSAInstruction s,
+      HeapExclusions hexcl,
       boolean ignoreAllocHeapDefs) {
     if (s == null) {
       throw new IllegalArgumentException("s is null");
     }
     Set<PointerKey> result = HashSetFactory.make(2);
-    ModVisitor v = makeModVisitor(n, result, pa, h, ignoreAllocHeapDefs);
+    ModVisitor<T, ?> v = makeModVisitor(n, result, pa, h, ignoreAllocHeapDefs);
     s.visit(v);
     return hexcl == null ? result : hexcl.filter(result);
   }
 
-  protected RefVisitor<T, ? extends ExtendedHeapModel> makeRefVisitor(CGNode n, Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h) {
-    return n.getMethod().getDeclaringClass().getClassLoader().getLanguage().makeRefVisitor(n, result, pa, h);
+  protected RefVisitor<T, ? extends ExtendedHeapModel> makeRefVisitor(
+      CGNode n, Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h) {
+    return n.getMethod()
+        .getDeclaringClass()
+        .getClassLoader()
+        .getLanguage()
+        .makeRefVisitor(n, result, pa, h);
   }
 
-  /**
-   * Compute the set of {@link PointerKey}s that represent pointers that instruction s may read.
-   */
-  public Set<PointerKey> getRef(CGNode n, ExtendedHeapModel h, PointerAnalysis<T> pa, SSAInstruction s, HeapExclusions hexcl) {
+  /** Compute the set of {@link PointerKey}s that represent pointers that instruction s may read. */
+  public Set<PointerKey> getRef(
+      CGNode n,
+      ExtendedHeapModel h,
+      PointerAnalysis<T> pa,
+      SSAInstruction s,
+      HeapExclusions hexcl) {
     if (s == null) {
       throw new IllegalArgumentException("s is null");
     }
     Set<PointerKey> result = HashSetFactory.make(2);
-    RefVisitor v = makeRefVisitor(n, result, pa, h);
+    RefVisitor<T, ?> v = makeRefVisitor(n, result, pa, h);
     s.visit(v);
     return hexcl == null ? result : hexcl.filter(result);
   }
-
 }

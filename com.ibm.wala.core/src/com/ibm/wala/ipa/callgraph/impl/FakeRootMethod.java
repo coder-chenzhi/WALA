@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2002 - 2006 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+ */
 package com.ibm.wala.ipa.callgraph.impl;
 
 import com.ibm.wala.cfg.IBasicBlock;
@@ -22,17 +22,21 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.strings.Atom;
 
-/**
- * A synthetic method that models the fake root node.
- */
+/** A synthetic method that models the fake root node. */
 public class FakeRootMethod extends AbstractRootMethod {
 
   public static final Atom name = Atom.findOrCreateAsciiAtom("fakeRootMethod");
 
-  public static final Descriptor descr = Descriptor.findOrCreate(new TypeName[0], TypeReference.VoidName);
+  public static final Descriptor descr =
+      Descriptor.findOrCreate(new TypeName[0], TypeReference.VoidName);
 
-  public FakeRootMethod(final IClass fakeRootClass, AnalysisOptions options, IAnalysisCacheView cache) {
-    super(MethodReference.findOrCreate(fakeRootClass.getReference(), name, descr), fakeRootClass.getClassHierarchy(), options, cache);
+  public FakeRootMethod(
+      final IClass fakeRootClass, AnalysisOptions options, IAnalysisCacheView cache) {
+    super(
+        MethodReference.findOrCreate(fakeRootClass.getReference(), name, descr),
+        fakeRootClass.getClassHierarchy(),
+        options,
+        cache);
   }
 
   /**
@@ -50,11 +54,11 @@ public class FakeRootMethod extends AbstractRootMethod {
    * @return true iff block is a basic block in the fake root method
    * @throws IllegalArgumentException if block is null
    */
-  public static boolean isFromFakeRoot(IBasicBlock block) {
+  public static boolean isFromFakeRoot(IBasicBlock<?> block) {
     if (block == null) {
       throw new IllegalArgumentException("block is null");
     }
     IMethod m = block.getMethod();
-    return m instanceof FakeRootMethod && ((FakeRootMethod)m).isFakeRootMethod(m.getReference());
+    return m instanceof FakeRootMethod && ((FakeRootMethod) m).isFakeRootMethod(m.getReference());
   }
 }

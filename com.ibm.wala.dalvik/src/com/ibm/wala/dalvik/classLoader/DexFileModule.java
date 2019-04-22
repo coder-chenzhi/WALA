@@ -3,8 +3,8 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html.
- * 
- * This file is a derivative of code released under the terms listed below.  
+ *
+ * This file is a derivative of code released under the terms listed below.
  *
  */
 /*
@@ -47,6 +47,9 @@
 
 package com.ibm.wala.dalvik.classLoader;
 
+import com.ibm.wala.classLoader.Module;
+import com.ibm.wala.classLoader.ModuleEntry;
+import com.ibm.wala.util.io.TemporaryFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,15 +57,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.jar.JarFile;
-
 import org.jf.dexlib2.DexFileFactory;
 import org.jf.dexlib2.Opcodes;
 import org.jf.dexlib2.iface.ClassDef;
 import org.jf.dexlib2.iface.DexFile;
-
-import com.ibm.wala.classLoader.Module;
-import com.ibm.wala.classLoader.ModuleEntry;
-import com.ibm.wala.util.io.TemporaryFile;
 
 /**
  * A module which is a wrapper around .dex and .apk file.
@@ -70,102 +68,107 @@ import com.ibm.wala.util.io.TemporaryFile;
  * @author barjo
  */
 public class DexFileModule implements Module {
-	private final File f;
-    private final DexFile dexfile;
-    private final Collection<ModuleEntry> entries;
+  private final File f;
+  private final DexFile dexfile;
+  private final Collection<ModuleEntry> entries;
+  public static final int AUTO_INFER_API_LEVEL = -1;
 
-    public static DexFileModule make(File f) throws IllegalArgumentException, IOException {
-    	if (f.getName().endsWith("jar")) {
-    		try (final JarFile jar = new JarFile(f)) {
-    			return new DexFileModule(jar);
-    		}
-    	} else {
-    		return new DexFileModule(f);
-    	}
+  public static DexFileModule make(File f) throws IllegalArgumentException, IOException {
+    return make(f, AUTO_INFER_API_LEVEL);
+  }
+
+  public static DexFileModule make(File f, int apiLevel)
+      throws IllegalArgumentException, IOException {
+    if (f.getName().endsWith("jar")) {
+      try (final JarFile jar = new JarFile(f)) {
+        return new DexFileModule(jar);
+      }
+    } else {
+      return new DexFileModule(f, apiLevel);
     }
-    
-    private static File tf(JarFile f) throws IOException {
-    	String name = f.getName();
-    	if (name.indexOf('/') >= 0) {
-    		name = name.substring(name.lastIndexOf('/')+1);
-    	}
-    	File tf = Files.createTempFile("name", "_classes.dex").toFile();
-    	tf.deleteOnExit();
-    	System.err.println("using " + tf);
-    	return tf;
+  }
+
+  private static File tf(JarFile f) throws IOException {
+    String name = f.getName();
+    if (name.indexOf('/') >= 0) {
+      name = name.substring(name.lastIndexOf('/') + 1);
     }
-    
-    private DexFileModule(JarFile f) throws IllegalArgumentException, IOException {    	
-    	this(TemporaryFile.streamToFile(tf(f), f.getInputStream(f.getEntry("classes.dex"))));
-    }
-    
-    /**
-     * @param f
-     *            the .dex or .apk file
-     * @throws IllegalArgumentException
-     */
-    private DexFileModule(File f) throws IllegalArgumentException {    	
-        try {
-        		this.f = f;
-            dexfile = DexFileFactory.loadDexFile(f, Opcodes.forApi(24));
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
+    File tf = Files.createTempFile("name", "_classes.dex").toFile();
+    tf.deleteOnExit();
+    System.err.println("using " + tf);
+    return tf;
+  }
 
-        // create ModuleEntries from ClassDefItem
-        entries = new HashSet<>();
+  private DexFileModule(JarFile f) throws IllegalArgumentException, IOException {
+    this(TemporaryFile.streamToFile(tf(f), f.getInputStream(f.getEntry("classes.dex"))));
+  }
 
-        for (ClassDef cdefitems : dexfile.getClasses()) {
-            entries.add(new DexModuleEntry(cdefitems, this));
-        }
-    }
+  private DexFileModule(File f) throws IllegalArgumentException {
+    this(f, AUTO_INFER_API_LEVEL);
+  }
 
-    /**
-     * @param f
-     *            the .dex or .apk file
-     * @param entry
-     *            the name of the .dex file inside the apk
-     * @param apiLevel
-     *            the api level wanted
-     * @throws IllegalArgumentException
-     */
-    public DexFileModule(File f, String entry, int apiLevel) throws IllegalArgumentException {
-        try {
-            this.f = f;
-            dexfile = DexFileFactory.loadDexEntry(f, entry,true, Opcodes.forApi(apiLevel));
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-
-        // create ModuleEntries from ClassDefItem
-        entries = new HashSet<>();
-        for (ClassDef cdefitems : dexfile.getClasses()) {
-            entries.add(new DexModuleEntry(cdefitems, this));
-        }
+  /** @param f the .dex or .apk file */
+  private DexFileModule(File f, int apiLevel) throws IllegalArgumentException {
+    try {
+      this.f = f;
+      dexfile =
+          DexFileFactory.loadDexFile(
+              f, apiLevel == AUTO_INFER_API_LEVEL ? null : Opcodes.forApi(apiLevel));
+    } catch (IOException e) {
+      throw new IllegalArgumentException(e);
     }
 
-    /**
-     * @return The DexFile associated to this module.
-     */
-    public DexFile getDexFile() {
-        return dexfile;
+    // create ModuleEntries from ClassDefItem
+    entries = new HashSet<>();
+
+    for (ClassDef cdefitems : dexfile.getClasses()) {
+      entries.add(new DexModuleEntry(cdefitems, this));
+    }
+  }
+
+  /**
+   * @param f the .oat or .apk file
+   * @param entry the name of the .dex file inside the container file
+   * @param apiLevel the api level wanted
+   */
+  public DexFileModule(File f, String entry, int apiLevel) throws IllegalArgumentException {
+    try {
+      this.f = f;
+      dexfile =
+          DexFileFactory.loadDexEntry(
+              f, entry, true, apiLevel == AUTO_INFER_API_LEVEL ? null : Opcodes.forApi(apiLevel));
+    } catch (IOException e) {
+      throw new IllegalArgumentException(e);
     }
 
-    /**
-     * @return The DexFile associated to this module.
-     */
-    public File getFile() {
-        return f;
+    // create ModuleEntries from ClassDefItem
+    entries = new HashSet<>();
+    for (ClassDef cdefitems : dexfile.getClasses()) {
+      entries.add(new DexModuleEntry(cdefitems, this));
     }
+  }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.ibm.wala.classLoader.Module#getEntries()
-     */
-    @Override
-    public Iterator<ModuleEntry> getEntries() {
-        return entries.iterator();
-    }
+  public DexFileModule(File f, String entry) throws IllegalArgumentException {
+    this(f, entry, AUTO_INFER_API_LEVEL);
+  }
 
+  /** @return The DexFile associated to this module. */
+  public DexFile getDexFile() {
+    return dexfile;
+  }
+
+  /** @return The DexFile associated to this module. */
+  public File getFile() {
+    return f;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see com.ibm.wala.classLoader.Module#getEntries()
+   */
+  @Override
+  public Iterator<ModuleEntry> getEntries() {
+    return entries.iterator();
+  }
 }
