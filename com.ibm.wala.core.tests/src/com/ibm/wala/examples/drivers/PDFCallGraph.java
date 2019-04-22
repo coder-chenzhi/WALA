@@ -40,6 +40,7 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.config.AnalysisScopeReader;
 import com.ibm.wala.util.debug.Assertions;
 import com.ibm.wala.util.graph.Graph;
+import com.ibm.wala.util.graph.GraphUtil;
 import com.ibm.wala.util.io.CommandLine;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.io.FileUtil;
@@ -163,6 +164,14 @@ public class PDFCallGraph {
     System.err.println(CallGraphStats.getStats(cg));
 
     Graph<CGNode> g = pruneForAppLoader(cg);
+    
+
+    // add by coder-chenzhi
+    System.err.println("After prune:");
+    System.err.println("Nodes:\t" + g.getNumberOfNodes());
+    System.err.println("Edges:\t" + GraphUtil.countEdges(g));
+
+//    System.out.println(g);
 
     return g;
   }

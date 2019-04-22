@@ -10,7 +10,8 @@
   <artifactId>com.ibm.wala.cast</artifactId>
   <packaging>eclipse-plugin</packaging>
 	<build>
-		<plugins>
+	<pluginManagement>
+			<plugins>
 		  <plugin>
 		    <groupId>org.codehaus.mojo</groupId>
 		    <artifactId>exec-maven-plugin</artifactId>
@@ -54,5 +55,6 @@
                             </executions>
                     </plugin>
                 </plugins>
-	</build>
+	</pluginManagement>
+</build>
 </project>

@@ -10,6 +10,7 @@
     <packaging>eclipse-plugin</packaging>
     <artifactId>com.ibm.wala.core.testdata</artifactId>
     <build>
+     <pluginManagement>
       <plugins>
 	<plugin>
 	  <artifactId>maven-antrun-plugin</artifactId>
@@ -39,5 +40,7 @@
           </dependencies>
 	</plugin>
       </plugins>
-    </build>
+   
+     </pluginManagement>
+      </build>
 </project>

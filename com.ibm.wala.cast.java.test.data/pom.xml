@@ -11,7 +11,8 @@
   <packaging>eclipse-plugin</packaging>
 
 	<build>
-		<plugins>
+	 <pluginManagement>
+	 <plugins>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.7</version>
@@ -40,6 +41,8 @@
               </dependencies>
 			</plugin>
 		</plugins>
-	</build>
+	
+	 </pluginManagement>
+		</build>
 
 </project>

@@ -49,3 +49,8 @@
 /edu.kit.wala.smali.test/out/
 results
 target/
+
+
+### add by coder-chenzhi
+*.launch
+*.prefs
